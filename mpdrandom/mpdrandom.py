@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-import random
-from pathlib import Path
 import json
+import random
+from argparse import ArgumentParser
+from pathlib import Path
+from typing import List
 
 import mpd
 
@@ -16,17 +18,17 @@ __author__ = "IbeeX"
 __email__ = "ibrkanac@gmail.com"
 
 
-def queue_random_album(client):
+def queue_random_album(client: mpd.MPDClient) -> bool:
 
     cache_file = get_cache_file()
     cache = load_cache(cache_file)
-    albums = client.list("album")
+    albums: List[str] = client.list("album")
     while True:
         album_name = random.choice(albums)
         if not album_name:
             return
         if in_cache(len(albums), cache, album_name):
-            print(f'{album_name}, album was queaed recently skipping...')
+            print(f"{album_name}, album was queaed recently skipping...")
             continue
         break
     cache.append(album_name)
@@ -36,28 +38,33 @@ def queue_random_album(client):
     client.findadd("album", album_name)
 
 
-def in_cache(no_albums, cache, album):
+def in_cache(no_albums: int, cache: List[str], album: str)-> bool:
     found = False
     if album in cache:
         found = True
-    percent = no_albums / 100 * 10
+    percent = get_cache_size(no_albums)
     if len(cache) > percent:
-        cache.pop(0)
+        cache = cache[len(cache) - percent:]
     return found
 
 
-def get_cache_file():
+def get_cache_size(no_albums: int, percent: int=10)-> int:
+    percent = no_albums / 100 * percent
+    return 100 if percent > 100 else percent
+
+
+def get_cache_file() -> Path:
     cache_dir = Path.home() / ".cache" / "mpdrandom"
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir / "cache.json"
 
 
-def load_cache(cache_file):
+def load_cache(cache_file: Path) -> List[str]:
     json_cache = ""
     if not cache_file.is_file():
         return []
     with cache_file.open() as f:
-        json_cache = f.read()
+        json_cache: str = f.read()
     return json.loads(json_cache)
 
 
@@ -67,8 +74,6 @@ def save_cache(cache_file, cache):
 
 
 def main():
-    # Arguments
-    from argparse import ArgumentParser
 
     arguments = ArgumentParser(
         description="Pick and play a random album from " "the current playlist"
