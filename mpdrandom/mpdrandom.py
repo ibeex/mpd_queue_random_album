@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 import random
+from pathlib import Path
+import json
 
 import mpd
 
@@ -16,12 +18,52 @@ __email__ = "ibrkanac@gmail.com"
 
 def queue_random_album(client):
 
+    cache_file = get_cache_file()
+    cache = load_cache(cache_file)
     albums = client.list("album")
-    album_name = random.choice(albums)
-    if album_name:
-        album = client.find("album", album_name)[0]
-        print(f"{album['albumartist']}: {album['album']}, from {len(albums)} albums.")
-        client.findadd("album", album_name)
+    while True:
+        album_name = random.choice(albums)
+        if not album_name:
+            return
+        if in_cache(len(albums), cache, album_name):
+            print(f'{album_name}, album was queaed recently skipping...')
+            continue
+        break
+    cache.append(album_name)
+    save_cache(cache_file, cache)
+    album = client.find("album", album_name)[0]
+    print(f"{album['albumartist']}: {album['album']}, from {len(albums)} albums.")
+    client.findadd("album", album_name)
+
+
+def in_cache(no_albums, cache, album):
+    found = False
+    if album in cache:
+        found = True
+    percent = no_albums / 100 * 10
+    if len(cache) > percent:
+        cache.pop(0)
+    return found
+
+
+def get_cache_file():
+    cache_dir = Path.home() / ".cache" / "mpdrandom"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir / "cache.json"
+
+
+def load_cache(cache_file):
+    json_cache = ""
+    if not cache_file.is_file():
+        return []
+    with cache_file.open() as f:
+        json_cache = f.read()
+    return json.loads(json_cache)
+
+
+def save_cache(cache_file, cache):
+    with cache_file.open(mode="w") as f:
+        f.write(json.dumps(cache))
 
 
 def main():
