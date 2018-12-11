@@ -23,6 +23,6 @@ Features
 """,
     entry_points="""
         [console_scripts]
-        mpdrandom=mpdrandom.mpdrandom:main
+        mpdrandom=mpdrandom.mpdrandom:cli
     """,
 )

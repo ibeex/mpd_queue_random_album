@@ -4,7 +4,7 @@ import json
 import random
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import mpd
 
@@ -17,33 +17,22 @@ __version__ = "1.0.0"
 __author__ = "IbeeX"
 
 
-def queue_random_album(client: mpd.MPDClient) -> None:
+def queue_random_album(client: mpd.MPDClient, cache: List[str]) -> Optional[str]:
 
-    cache_file = get_cache_file()
-    cache = load_cache(cache_file)
     albums: List[str] = client.list("album")
-    percent = get_cache_size(len(albums))
     while True:
         album_name = random.choice(albums)
         if not album_name:
-            return
-        if in_cache(cache, album_name):
+            return None
+        if album_name in cache:
             print(f"{album_name}, album was queaed recently skipping...")
             continue
         break
     cache.append(album_name)
-    cache = enforce_cache_size(percent, cache)
-    save_cache(cache_file, cache)
+    client.findadd("album", album_name)
     album = client.find("album", album_name)[0]
     print(f"{album['albumartist']}: {album['album']}, from {len(albums)} albums.")
-    client.findadd("album", album_name)
-
-
-def in_cache(cache: List[str], album: str) -> bool:
-    found = False
-    if album in cache:
-        found = True
-    return found
+    return album_name
 
 
 def enforce_cache_size(size: int, cache: List[str]) -> List[str]:
@@ -77,8 +66,29 @@ def save_cache(cache_file, cache):
         f.write(json.dumps(cache))
 
 
-def main():
+def main(args):
+    client = mpd.MPDClient()
+    client.timeout = 10
+    client.idletimeout = None
+    client.connect(args.host, args.port)
+    if args.password:
+        client.password(args.password)
+    cache_file = get_cache_file()
+    cache = load_cache(cache_file)
+    albums: List[str] = client.list("album")
+    percent = get_cache_size(len(albums))
+    for n in range(args.number_off_albums):
+        album_name = queue_random_album(client, cache)
+        if not album_name:
+            break
+        cache.append(album_name)
+        cache = enforce_cache_size(percent, cache)
+    save_cache(cache_file, cache)
+    client.close()
+    client.disconnect()
 
+
+def cli():
     arguments = ArgumentParser(
         description="Pick and play a random album from " "the current playlist"
     )
@@ -115,13 +125,4 @@ def main():
     )
     args = arguments.parse_args()
 
-    client = mpd.MPDClient()
-    client.timeout = 10
-    client.idletimeout = None
-    client.connect(args.host, args.port)
-    if args.password:
-        client.password(args.password)
-    for n in range(args.number_off_albums):
-        queue_random_album(client)
-    client.close()
-    client.disconnect()
+    main(args)
