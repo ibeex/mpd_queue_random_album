@@ -15,42 +15,46 @@ PASSWORD = None
 
 __version__ = "1.0.0"
 __author__ = "IbeeX"
-__email__ = "ibrkanac@gmail.com"
 
 
-def queue_random_album(client: mpd.MPDClient) -> bool:
+def queue_random_album(client: mpd.MPDClient) -> None:
 
     cache_file = get_cache_file()
     cache = load_cache(cache_file)
     albums: List[str] = client.list("album")
+    percent = get_cache_size(len(albums))
     while True:
         album_name = random.choice(albums)
         if not album_name:
             return
-        if in_cache(len(albums), cache, album_name):
+        if in_cache(cache, album_name):
             print(f"{album_name}, album was queaed recently skipping...")
             continue
         break
     cache.append(album_name)
+    cache = enforce_cache_size(percent, cache)
     save_cache(cache_file, cache)
     album = client.find("album", album_name)[0]
     print(f"{album['albumartist']}: {album['album']}, from {len(albums)} albums.")
     client.findadd("album", album_name)
 
 
-def in_cache(no_albums: int, cache: List[str], album: str)-> bool:
+def in_cache(cache: List[str], album: str) -> bool:
     found = False
     if album in cache:
         found = True
-    percent = get_cache_size(no_albums)
-    if len(cache) > percent:
-        cache = cache[len(cache) - percent:]
     return found
 
 
-def get_cache_size(no_albums: int, percent: int=10)-> int:
-    percent = no_albums / 100 * percent
-    return 100 if percent > 100 else percent
+def enforce_cache_size(size: int, cache: List[str]) -> List[str]:
+    if len(cache) > size:
+        return cache[len(cache) - size :]
+    return cache
+
+
+def get_cache_size(no_albums: int, percent: int = 10) -> int:
+    cache_size: int = int(no_albums / 100 * percent)
+    return 100 if percent > 100 else cache_size
 
 
 def get_cache_file() -> Path:
@@ -60,11 +64,11 @@ def get_cache_file() -> Path:
 
 
 def load_cache(cache_file: Path) -> List[str]:
-    json_cache = ""
+    json_cache: str = ""
     if not cache_file.is_file():
         return []
     with cache_file.open() as f:
-        json_cache: str = f.read()
+        json_cache = f.read()
     return json.loads(json_cache)
 
 
