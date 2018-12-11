@@ -43,7 +43,13 @@ def enforce_cache_size(size: int, cache: List[str]) -> List[str]:
 
 def get_cache_size(no_albums: int, percent: int = 10) -> int:
     cache_size: int = int(no_albums / 100 * percent)
-    return 100 if percent > 100 else cache_size
+    if no_albums <= 1:
+        cache_size = 0
+    elif cache_size == 0:
+        cache_size = 1
+    elif cache_size > 100:
+        cache_size = 100
+    return cache_size
 
 
 def get_cache_file() -> Path:
