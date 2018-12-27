@@ -13,6 +13,7 @@ setup(
     keywords=["mpd", "album", "random", "shuffle", "music"],
     license="License :: OSI Approved :: GNU General Public License (GPL)",
     classifiers=["Programming Language :: Python", "Development Status :: 4 - Beta"],
+    python_requires=">=3.6",
     long_description="""\
 mpdrandom
 ---------
