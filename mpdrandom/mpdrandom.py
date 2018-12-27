@@ -25,15 +25,15 @@ def queue_random_album(client: mpd.MPDClient, cache: List[str]) -> Optional[str]
         if not album_name:
             return None
         if album_name in cache:
-            print("{}, album was queaed recently skipping...".format(album_name))
+            print(f"{album_name}, album was queaed recently skipping...")
             continue
         break
     client.findadd("album", album_name)
     album = client.find("album", album_name)[0]
     if "albumartist" in album:
-        print("{}: {}, from {} albums.".format(album['albumartist'], album['album'], len(albums)))
+        print(f"{album['albumartist']}: {album['album']}, from {len(albums)} albums.")
     else:
-        print("{}: {}, from {} albums.".format(album['artist'], album['album'], len(albums)))
+        print(f"{album['artist']}: {album['album']}, from {len(albums)} albums.")
     return album_name
 
 
