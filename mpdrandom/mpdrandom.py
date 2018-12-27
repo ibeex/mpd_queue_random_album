@@ -71,7 +71,7 @@ def load_cache(cache_file: Path) -> List[str]:
 
 def save_cache(cache_file, cache):
     with cache_file.open(mode="w") as f:
-        f.write(json.dumps(cache, indent=4, sort_keys=True))
+        f.write(json.dumps(cache))
 
 
 def main(args):
