@@ -74,6 +74,11 @@ def save_cache(cache_file, cache):
         f.write(json.dumps(cache, indent=4, sort_keys=True))
 
 
+def enqueue_current(client: mpd.MPDClient) -> None:
+    song = client.currentsong()
+    client.findadd("album", song["album"])
+
+
 def main(args):
     client = mpd.MPDClient()
     client.timeout = 10
@@ -81,17 +86,20 @@ def main(args):
     client.connect(args.host, args.port)
     if args.password:
         client.password(args.password)
-    cache_file = get_cache_file()
-    cache = load_cache(cache_file)
-    albums: List[str] = client.list("album")
-    percent = get_cache_size(len(albums))
-    for n in range(args.number_off_albums):
-        album_name = queue_random_album(client, cache)
-        if not album_name:
-            break
-        cache.append(album_name)
-        cache = enforce_cache_size(percent, cache)
-    save_cache(cache_file, cache)
+    if args.enque_current:
+        enqueue_current(client)
+    else:
+        cache_file = get_cache_file()
+        cache = load_cache(cache_file)
+        albums: List[str] = client.list("album")
+        percent = get_cache_size(len(albums))
+        for n in range(args.number_off_albums):
+            album_name = queue_random_album(client, cache)
+            if not album_name:
+                break
+            cache.append(album_name)
+            cache = enforce_cache_size(percent, cache)
+        save_cache(cache_file, cache)
     client.close()
     client.disconnect()
 
@@ -107,6 +115,14 @@ def cli():
         dest="number_off_albums",
         default=1,
         help="number of albums to queue",
+    )
+    arguments.add_argument(
+        "-c",
+        "--current",
+        type=bool,
+        dest="enque_current",
+        default=False,
+        help="enque album from current song",
     )
     arguments.add_argument(
         "-p",
