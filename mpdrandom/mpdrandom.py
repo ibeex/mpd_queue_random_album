@@ -4,7 +4,7 @@ import json
 import random
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 import mpd
 
@@ -75,7 +75,7 @@ def save_cache(cache_file, cache):
 
 
 def enqueue_current(client: mpd.MPDClient) -> None:
-    song = client.currentsong()
+    song: Dict[str, Any] = client.currentsong()
     client.findadd("album", song["album"])
 
 
