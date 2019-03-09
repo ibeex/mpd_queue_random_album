@@ -79,6 +79,10 @@ def enqueue_current(client: mpd.MPDClient) -> None:
     client.findadd("album", song["album"])
 
 
+def enqueue_date(client: mpd.MPDClient, search_date: int) -> None:
+    client.searchadd("date", str(search_date))
+
+
 def main(args):
     client = mpd.MPDClient()
     client.timeout = 10
@@ -88,6 +92,8 @@ def main(args):
         client.password(args.password)
     if args.enque_current:
         enqueue_current(client)
+    elif args.search_date != 0:
+        enqueue_date(client, args.search_date)
     else:
         cache_file = get_cache_file()
         cache = load_cache(cache_file)
@@ -123,6 +129,14 @@ def cli():
         dest="enque_current",
         default=False,
         help="enque album from current song",
+    )
+    arguments.add_argument(
+        "-d",
+        "--date",
+        type=int,
+        dest="search_date",
+        default=0,
+        help="enque all albums from spesified year",
     )
     arguments.add_argument(
         "-p",
