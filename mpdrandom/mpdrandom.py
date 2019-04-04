@@ -3,8 +3,9 @@
 import json
 import random
 from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 import mpd
 
@@ -90,11 +91,11 @@ def main(args):
     client.connect(args.host, args.port)
     if args.password:
         client.password(args.password)
-    if args.enque_current:
+    if args.options == 'current':
         enqueue_current(client)
-    elif args.search_date != 0:
+    elif args.options == 'search':
         enqueue_date(client, args.search_date)
-    else:
+    elif args.options == 'random':
         cache_file = get_cache_file()
         cache = load_cache(cache_file)
         albums: List[str] = client.list("album")
@@ -111,31 +112,24 @@ def main(args):
 
 
 def cli():
-    arguments = ArgumentParser(
-        description="Pick and play a random album from " "the current playlist"
-    )
-    arguments.add_argument(
-        "-n",
-        "--no",
+    arguments = ArgumentParser(description="Control mpd deamon with custom commands")
+    subparser = arguments.add_subparsers(dest="options")
+
+    random_parser = subparser.add_parser("random", help="Enqueue random albums")
+    random_parser.add_argument(
+        "nummber_off_albums",
         type=int,
-        dest="number_off_albums",
+        nargs="?",
         default=1,
         help="number of albums to queue",
     )
-    arguments.add_argument(
-        "-c",
-        "--current",
-        type=bool,
-        dest="enque_current",
-        default=False,
-        help="enque album from current song",
-    )
-    arguments.add_argument(
-        "-d",
-        "--date",
+    subparser.add_parser("current", help="Enqueue albmum based on song currntly played")
+    search_parser = subparser.add_parser("searh", help="Search albums by year relesed")
+    search_parser.add_argument(
+        "search_date",
         type=int,
-        dest="search_date",
-        default=0,
+        nargs="?",
+        default=datetime.now().year,
         help="enque all albums from spesified year",
     )
     arguments.add_argument(
@@ -162,5 +156,6 @@ def cli():
         metavar="PASSWORD",
     )
     args = arguments.parse_args()
-
-    main(args)
+    if args.options:
+        main(args)
+    arguments.print_help()

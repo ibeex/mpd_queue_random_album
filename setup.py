@@ -24,6 +24,6 @@ Features
 """,
     entry_points="""
         [console_scripts]
-        mpdrandom=mpdrandom.mpdrandom:cli
+        mpdcontrol=mpdrandom.mpdrandom:cli
     """,
 )
