@@ -124,7 +124,7 @@ def cli():
         help="number of albums to queue",
     )
     subparser.add_parser("current", help="Enqueue albmum based on song currntly played")
-    search_parser = subparser.add_parser("searh", help="Search albums by year relesed")
+    search_parser = subparser.add_parser("search", help="Search albums by year relesed")
     search_parser.add_argument(
         "search_date",
         type=int,
@@ -158,4 +158,5 @@ def cli():
     args = arguments.parse_args()
     if args.options:
         main(args)
-    arguments.print_help()
+    else:
+        arguments.print_help()
