@@ -117,7 +117,7 @@ def cli():
 
     random_parser = subparser.add_parser("random", help="Enqueue random albums")
     random_parser.add_argument(
-        "nummber_off_albums",
+        "number_off_albums",
         type=int,
         nargs="?",
         default=1,
