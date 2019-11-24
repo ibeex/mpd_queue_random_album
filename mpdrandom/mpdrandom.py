@@ -123,7 +123,7 @@ def cli():
         default=1,
         help="number of albums to queue",
     )
-    subparser.add_parser("current", help="Enqueue albmum based on song currntly played")
+    subparser.add_parser("current", help="Enqueue album based on song currently played")
     search_parser = subparser.add_parser("search", help="Search albums by year relesed")
     search_parser.add_argument(
         "search_date",
