@@ -10,17 +10,19 @@ Is a script that adds some randomness to mpds albums.
     pipsi install .
 
 # Usage
-    usage: mpdrandom [-h] [-p PORT] [-u HOST] [--password PASSWORD] -n
+    usage: mpdcontrol [-h] [-p PORT] [-u HOST] [--password PASSWORD] {random,current,search} ...
 
-    Pick and play a random album from the current playlist
+    positional arguments:
+      {random,current,search}
+      random              Enqueue random albums
+      current             Enqueue album based on song currently played
+      search              Search albums by year relesed
 
     optional arguments:
-      -h, --help            show this help message and exit
-      -n NUMBER_OFF_ALBUMS, --no NUMBER_OFF_ALBUMS
-                            number of albums to queue
-      -p PORT, --port PORT  specify mpd's port (defaults to 6600)
-      -u HOST, --host HOST  specify mpd's host (defaults to 127.0.0.1)
-      --password PASSWORD   specify mpd's password
+    -h, --help            show this help message and exit
+    -p PORT, --port PORT  specify mpd's port (defaults to 6600)
+    -u HOST, --host HOST  specify mpd's host (defaults to 192.168.88.241)
+    --password PASSWORD   specify mpd's password
 
 # Thanks
 Thanks to [moOde audio player](http://moodeaudio.org/). For great audio player.
