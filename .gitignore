@@ -68,3 +68,4 @@ tags
 *.retry
 cpe/MANIFEST
 deploy.retry
+.python-version
